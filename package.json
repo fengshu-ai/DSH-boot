@@ -20,12 +20,10 @@
     "locale/*.json",
     "icon.svg",
     "README.md",
-    "BUILD.md",
-    "INSTALL.md",
+    "HANDOFF.md",
     "CREDITS.md",
-    "LICENSE",
     "licenses/",
-    "docs/"
+    "packs/"
   ],
   "license": "MIT",
   "keywords": [
@@ -33,20 +31,16 @@
     "dsh-plugin",
     "deepseek-harness",
     "cordis",
+    "plugin",
     "boot-animation",
     "splash",
+    "startup",
     "theme",
     "web-ui",
     "pixel"
   ],
   "engines": {
     "node": ">=20"
-  },
-  "scripts": {
-    "assets": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/prepare-assets.ps1",
-    "build": "node src/patch.cjs",
-    "check": "node --check client.js && node --check index.js",
-    "verify": "npm run build && npm run check"
   },
   "peerDependencies": {
     "react": "^18.2.0"
@@ -110,5 +104,29 @@
       "hotReload": null,
       "remove": null
     }
-  }
+  },
+  "author": {
+    "name": "深度求索皮肤（非盈利同人）",
+    "url": "https://github.com/deepseek-ai"
+  },
+  "contributors": [
+    {
+      "name": "繁星相位制作组（《饲养染的 30 DAYS》）",
+      "comment": "原作与制作组【繁星相位制作组】（《饲养染的 30 DAYS》/《终点站》）。按制作组条款：严禁对本素材包二次分发或搬运；严禁任何形式商业盈利；二创图片/视频需注明画师或制作组署名（示例见 CREDITS.md）。"
+    },
+    {
+      "name": "赤橙chio",
+      "comment": "画师：本文件夹内所有美术素材（立绘/SD/CG、雪景）均由画师【赤橙chio】绘制，画师保留对美术素材的解释与所有权。"
+    },
+    {
+      "name": "TakWolf",
+      "url": "https://takwolf.com",
+      "comment": "Fusion Pixel 像素字体（SIL OFL-1.1，保留字体名 'Fusion Pixel'）。侧栏正文用 12px 版、胶囊用 10px 版，均为 GB2312 子集；许可证见 licenses/Fusion-Pixel-OFL-1.1.txt。"
+    },
+    {
+      "name": "Ziyang Song",
+      "url": "https://github.com/yannicksong0106",
+      "comment": "dsh-550c-boot（MIT）：本包的 dsh / dshWorkshop 声明与 cordis.patch.yml 格式参考。"
+    }
+  ]
 }
