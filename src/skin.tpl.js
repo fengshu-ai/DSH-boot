@@ -320,10 +320,10 @@
               + '<em>使用素材来自画师【赤橙chio】哇</em>';
             if (credit.innerHTML !== creditHtml) credit.innerHTML = creditHtml;
             // 列表一长就会从落款后面穿过去：内容快占满滚动区时把落款收起来
-            const scrollArea = col.querySelector('[class*="_scrollArea"]');
-            const reserve = credit.offsetHeight + 18;
-            const collapsed = col.clientWidth < 220;   // 侧栏收起成窄条时不显示
-            const wouldOverlap = collapsed || (scrollArea !== null && scrollArea.scrollHeight + reserve > scrollArea.clientHeight);
+            // 硬编码阈值：列表内容离底边不足 120px 时，落款会被压住 → 直接收起来
+            const area = col.querySelector('[class*="_scrollArea"]');
+            const wouldOverlap = col.clientWidth < 220
+              || (area !== null && area.scrollHeight > area.clientHeight - 120);
             credit.classList.toggle('dshb-credit-off', wouldOverlap);
             // 品牌行 HARNESS 那个徽章是 SVG 里画死的深蓝块，字也是深蓝 → 用一层米色字盖回去
             const name = col.querySelector('[class*="_brandName"]');
