@@ -23,7 +23,8 @@
     "BUILD.md",
     "CREDITS.md",
     "LICENSE",
-    "licenses/"
+    "licenses/",
+    "docs/"
   ],
   "license": "MIT",
   "keywords": [
