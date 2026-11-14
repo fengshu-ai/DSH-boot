@@ -1,11 +1,8 @@
-# 构建产物（内嵌原作素材，绝不能提交）
+# 构建产物（可从 assets/raw 重新生成）
 client.js
-assets/
+assets/*.b64
 node_modules/
-*.b64
 
-# 本地抓的截图/录屏（含原作美术）
+# 本地截图 / 录屏
 shots/
 *.mp4
-*.png
-!icon.svg

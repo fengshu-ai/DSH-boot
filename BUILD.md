@@ -1,6 +1,7 @@
 # 构建说明
 
-产物是 `client.js`（一个内嵌素材的 Client 半边）。仓库里**不含**任何原作素材，构建前必须自己准备 `assets/`。
+产物是 `client.js`（一个内嵌素材的 Client 半边）。仓库自带 `assets/raw/` 与字体，克隆后即可构建；
+若 `assets/raw/` 不全，脚本会回落到你本地的游戏包提取。
 
 ## 前置
 
@@ -9,13 +10,15 @@
 - 本机安装过《饲养染的 30 DAYS》（Steam 版即可，路径见 `tools/extract-game-sprites.py` 顶部的 `GAME`）
 - Fusion Pixel 字体（两个尺寸的 woff2，见下）
 
-## 一、从游戏包提取素材
+## 一、素材
+
+`assets/raw/` 已包含：`logo5.png`（标题字）、`main_menu.png`（主界面整图）、`m3.webm`（主菜单循环）。
+需要重新提取时：
 
 ```bash
 python tools/extract-game-sprites.py menu assets/raw
+python tools/extract-game-sprites.py get images/m3.webm assets/raw
 ```
-
-会导出 `logo5.png`（标题字）、`main_menu.png`（主界面整图）、`snow_large.png`、`fac*.jpg`。
 
 ## 二、生成 `assets/*.b64`
 
@@ -28,23 +31,21 @@ python tools/extract-game-sprites.py menu assets/raw
 | `textfont.b64` | Fusion Pixel **12px** 子集 | 正文/列表 |
 | `capsfont.b64` | Fusion Pixel **10px** 子集 | 胶囊（20px = 2×10 才锐） |
 
-前四项 `scripts/prepare-assets.ps1` 会自动做完（含 `m3.webm`）：
+`npm run assets`（即 `scripts/prepare-assets.ps1`）会一次生成前四项和字体子集：
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/prepare-assets.ps1
 ```
 
-## 三、字体（需手动下载一次）
+## 三、字体
 
-1. 从 TakWolf/fusion-pixel-font 的 release 里取 **12px proportional zh_hans** 与 **10px proportional zh_hans** 的 woff2；
-2. 放进 `assets/`，分别跑：
+`assets/fonts/` 里已带：
 
-```bash
-python scripts/subset-font-12px.py     # → assets/textfont.b64
-python scripts/subset-font-10px.py     # → assets/capsfont.b64
-```
+- `fusion-pixel-12px.woff2` —— 上游 **Fusion Pixel 12px proportional zh_hans**（SIL OFL-1.1，原样分发）；
+- `dsh-pixel-10.woff2` —— 基于上游 10px 切的 GB2312 子集，**已改名 `DSH Pixel 10`**
+  （OFL 规定修改版不得沿用保留字体名 `Fusion Pixel`）。
 
-脚本只保留 GB2312 + ASCII 的字符，产物约 190KB。字体是 SIL OFL-1.1，分发子集请带上 `licenses/Fusion-Pixel-OFL-1.1.txt`。
+构建时脚本会把 12px 切成 GB2312 子集、把 10px 直接 base64，产物各约 190KB。
 
 ## 四、构建
 
