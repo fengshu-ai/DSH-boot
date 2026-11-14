@@ -660,9 +660,12 @@
           'box-shadow:none!important}',
           /* 顶部标题条：外壳那层的 ::before 正好是那 40px 的拖拽区，刷成深蓝黑盖住底图 */
           '[data-dshb-frame]:before{background:#0a0f1c!important}',
+          /* 窗口边缘（body）跟着主题上色，避免底栏露出一条白边 */
+          'html[data-dshb-theme="dark"] body{background-color:#0b0f16!important}',
+          'html[data-dshb-theme="light"] body{background-color:#efe8dc!important}',
           /* 底部状态栏：composerSeat 那条 gradient 到 bg-base 就变成黑边了，
              去掉之后露出主栏底图；它的 z-index 和 sticky 不动，气泡不会被压。 */
-          'body[data-ds-dark-theme] [class*="_composerSeat"]{background:transparent!important}',
+          '[class*="_composerSeat"]{background:transparent!important}',
           /* 插件页那种整页视图的"页头条"，底色不是画在元素上，而是画在
              .pageBar[data-natural]::before 这个伪元素里（高度跟着滚动收起），
              inline 改不到伪元素，只能按类名尾巴压掉（类名被 CSS modules 加了哈希）。 */
