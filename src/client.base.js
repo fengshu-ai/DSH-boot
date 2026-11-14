@@ -37,6 +37,11 @@ window.__ModuleLoader__.load({
     const CAPTION_SYMBOL = '#7aaaff';
 
     function setCaption(fill, symbol) {
+      // 皮肤会写 window.__dshbCaption；凡是用默认深色值调用的地方，都换成当前主题的配色
+      try {
+        const themed = window.__dshbCaption;
+        if (themed !== undefined && fill === CAPTION_REST) { fill = themed.bg; symbol = themed.sym; }
+      } catch (e) { /* 忽略 */ }
       try {
         const text = CAPTION_PROBE +
           '{background-color:' + fill + ' !important;color:' + symbol + ' !important}';
@@ -50,6 +55,7 @@ window.__ModuleLoader__.load({
         if (style.textContent !== text) style.textContent = text;
       } catch (error) { /* head 还没就绪就算了 */ }
     }
+    try { window.__dshbSetCaption = setCaption; } catch (e) { /* 忽略 */ }
     const ENTRY_ID = 'dsh-boot';
     const TOTAL = 7400;
     /** 场景图（1600×1271）按“整窗 cover”算出的尺寸与偏移；启动幕和主栏共用同一份。 */

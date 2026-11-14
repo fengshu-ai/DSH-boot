@@ -234,7 +234,8 @@
           if (st === null) { st = document.createElement('style'); st.id = 'dshb-pack-css'; document.head.appendChild(st); }
           if (st.textContent !== next.css) st.textContent = next.css;
         } catch (e) { /* 忽略 */ }
-        try { if (typeof setCaption === 'function') setCaption(next.titlebar, next.captionSymbol); } catch (e) { /* 忽略 */ }
+        try { window.__dshbCaption = { bg: next.titlebar, sym: next.captionSymbol }; } catch (e) { /* 忽略 */ }
+        try { const sc = (typeof setCaption === 'function') ? setCaption : window.__dshbSetCaption; if (typeof sc === 'function') sc(next.titlebar, next.captionSymbol); } catch (e) { /* 忽略 */ }
         if (prev !== null) { try { paintFrame(); } catch (e) { /* 忽略 */ } }
       }
       return next;
@@ -346,8 +347,7 @@
       try { pack(); watchThemeToken(); } catch (e) { /* 忽略 */ }
       try {
         const card = cardElement();
-        const dark = document.body !== null && document.body.hasAttribute('data-ds-dark-theme');
-        if (card === null || !dark) {
+        if (card === null) {
           if (card !== null) card.classList.remove(SKIN_CLASS);
           unpeel();
           unframe();
@@ -650,13 +650,13 @@
         const css = [
           '@font-face{font-family:"dshb-text";src:url("' + TEXT_FONT + '") format("woff2");font-display:swap}',
           '@font-face{font-family:"dshb-caps";src:url("' + CAPS_FONT + '") format("woff2");font-display:swap}',
-          'body[data-ds-dark-theme] .' + SKIN_CLASS + '{',
+          '.' + SKIN_CLASS + '{',
           'background-color:transparent!important;',
           'background-image:none!important;',
           'box-shadow:inset 30px 0 26px -14px rgba(255,255,255,.98)!important}',
           /* 底图只有一份，铺在整窗外壳上（见 paintFrameArt）：主栏、右侧栏、
              各处留白全透同一张图，接缝天然就是对上的。 */
-          'body[data-ds-dark-theme] [data-dshb-frame]{',
+          '[data-dshb-frame]{',
           'isolation:isolate;',
           'background-color:#0a0f1c!important;',
           'box-shadow:none!important}',
@@ -667,7 +667,7 @@
           'background-clip:border-box!important}',
           /* 底部状态栏：composerSeat 那条 gradient 到 bg-base 就变成黑边了，
              去掉之后露出主栏底图；它的 z-index 和 sticky 不动，气泡不会被压。 */
-          'body[data-ds-dark-theme] [class*="_composerSeat"]{background:transparent!important}',
+          '[class*="_composerSeat"]{background:transparent!important}',
           /* 插件页那种整页视图的"页头条"，底色不是画在元素上，而是画在
              .pageBar[data-natural]::before 这个伪元素里（高度跟着滚动收起），
              inline 改不到伪元素，只能按类名尾巴压掉（类名被 CSS modules 加了哈希）。 */
@@ -676,7 +676,7 @@
           '[class*="pageBar"]{background:transparent!important}',
           /* 右侧栏（上下文 / 文件那一列）自己的 bg-base 让开，露出外壳那层整窗底图
              —— 和"底栏"同一个套路：它盖着什么，就把什么压成透明。 */
-          'body[data-ds-dark-theme] [class*="_rightbarCol"]{background:transparent!important}',
+          '[class*="_rightbarCol"]{background:transparent!important}',
           /* ---------- 侧栏：米色纸 + 藏青描边胶囊（照游戏主菜单那张的"风格"） ---------- */
           '[class*="_sidebarCol"]{position:relative!important;',
           'background-color:transparent!important;',
