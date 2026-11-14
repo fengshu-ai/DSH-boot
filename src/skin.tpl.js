@@ -319,15 +319,17 @@
             const creditHtml = '<img src="' + TITLE_SIDE + '" alt="饲养染的 30 DAYS">'
               + '<em>使用素材来自画师【赤橙chio】哇</em>';
             if (credit.innerHTML !== creditHtml) credit.innerHTML = creditHtml;
-            // 直接比像素：列表内容的底边碰上落款的顶边才收起
+            // 落款顶边贴在列表末尾那条线上；下方放不下就收起来
             const area = col.querySelector('[class*="_scrollArea"]');
+            const colRect = col.getBoundingClientRect();
             let wouldOverlap = col.clientWidth < 220;
             if (!wouldOverlap && area !== null) {
               const kid = area.lastElementChild;
-              const contentBottom = kid === null
-                ? area.getBoundingClientRect().top
-                : kid.getBoundingClientRect().bottom;
-              wouldOverlap = contentBottom > credit.getBoundingClientRect().top - 4;
+              const contentBottom = kid === null ? colRect.top : kid.getBoundingClientRect().bottom;
+              credit.style.bottom = 'auto';
+              credit.style.top = Math.round(contentBottom - colRect.top + 10) + 'px';
+              const fits = contentBottom - colRect.top + 10 + credit.offsetHeight <= col.clientHeight - 30;
+              wouldOverlap = !fits;
             }
             credit.classList.toggle('dshb-credit-off', wouldOverlap);
             // 品牌行 HARNESS 那个徽章是 SVG 里画死的深蓝块，字也是深蓝 → 用一层米色字盖回去
