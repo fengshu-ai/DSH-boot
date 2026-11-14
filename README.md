@@ -19,6 +19,11 @@
 - `Alt+B` 重播启动幕；`?boot=0` 不播启动幕；`?skin=0` 关皮肤；
 - 主栏动态底图在插件设置里切（`dsh.skin.motion`），或 `?motion=0|1`。
 
+## 安装
+
+完整的安装/卸载步骤见 **[INSTALL.md](INSTALL.md)**。三步：克隆 → `npm run assets && npm run build` →
+在 profile 的 `package.json` 里加一条 `link:` 依赖 + 把包名加进 `dsh.profile.bundles`，`pnpm install` 后重启 DSH。
+
 ## 自己构建
 
 仓库已包含构建所需的原作素材（`assets/raw/`，经制作组同意随项目分发）与 Fusion Pixel 字体，
