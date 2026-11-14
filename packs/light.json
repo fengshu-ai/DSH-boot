@@ -1,0 +1,8 @@
+{
+  "id": "light",
+  "titlebar": "#efe8dc",
+  "veil": "rgba(250,247,241,.06)",
+  "videoFilter": "brightness(1.02) saturate(1.02)",
+  "captionSymbol": "#3e519d",
+  "css": "html[data-dshb-theme=\"light\"] body{background-color:#efe8dc!important}\n[class*=\"_composerSeat\"]{background:linear-gradient(to top,#efe8dc 34%,rgba(239,232,220,0))!important}"
+}

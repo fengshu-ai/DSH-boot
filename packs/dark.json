@@ -1,0 +1,8 @@
+{
+  "id": "dark",
+  "titlebar": "#0a0f1c",
+  "veil": "rgba(6,10,19,.10)",
+  "videoFilter": "brightness(1)",
+  "captionSymbol": "#7aaaff",
+  "css": "html[data-dshb-theme=\"dark\"] body{background-color:#0b0f16!important}\n[class*=\"_composerSeat\"]{background:transparent!important}"
+}

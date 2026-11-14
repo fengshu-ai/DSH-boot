@@ -141,8 +141,8 @@
       // z-index:-1：夹在 #dshb-bg（-2）和所有内容之间 —— 负层永远在普通内容下面，
       // 不会像 z-index:0 那样把一个 position:static 的整页界面盖掉。
       v.style.cssText = 'position:absolute;pointer-events:none;z-index:-1;object-fit:fill;' +
-        'filter:brightness(1);opacity:0;transition:opacity .9s ease;' +
-        'border-radius:var(--dsh-windows-content-radius,12px) 0 0 0';
+        'filter:' + pack().videoFilter + ';opacity:0;transition:opacity .9s ease;' +
+        'border-radius:0';
       v.addEventListener('canplay', function () {
         v.style.opacity = '1';
         try { const p = v.play(); if (p && p.catch) p.catch(function () {}); } catch (e) { /* 自动播放被挡就算了 */ }
@@ -202,6 +202,54 @@
     /** 顶部标题条的目标色：和 Electron 标题栏覆盖层（─ □ ✕ 那块）同一个深蓝黑。 */
     const TITLEBAR = '#0a0f1c';
 
+    /** 直接读 DSH 的底色 token：浅色 ...bluish-00 / 深色 ...bluish-950。 */
+    function themeToken() {
+      try { return (getComputedStyle(document.body).getPropertyValue('--dsw-alias-bg-base') || '').trim(); }
+      catch (e) { return ''; }
+    }
+    function currentTheme() {
+      const t = themeToken();
+      if (t.indexOf('bluish-950') >= 0) return 'dark';
+      if (t.indexOf('bluish-00') >= 0) return 'light';
+      try {
+        const b = document.body, r = document.documentElement;
+        if (b !== null && b.hasAttribute('data-ds-dark-theme')) return 'dark';
+        if (r !== null && r.dataset.dsThemeSource === 'light') return 'light';
+        if (r !== null && r.dataset.dsThemeSource === 'dark') return 'dark';
+      } catch (e) { /* 忽略 */ }
+      return 'dark';
+    }
+
+    let packId = null;
+    /** 取当前主题对应的包；切换时换掉 html 标记、包 CSS 和窗口按钮色。 */
+    function pack() {
+      const id = currentTheme();
+      const next = (PACKS[id] || PACKS.dark);
+      if (next.id !== packId) {
+        const prev = packId;
+        packId = next.id;
+        try { document.documentElement.dataset.dshbTheme = next.id; } catch (e) { /* 忽略 */ }
+        try {
+          let st = document.getElementById('dshb-pack-css');
+          if (st === null) { st = document.createElement('style'); st.id = 'dshb-pack-css'; document.head.appendChild(st); }
+          if (st.textContent !== next.css) st.textContent = next.css;
+        } catch (e) { /* 忽略 */ }
+        try { if (typeof setCaption === 'function') setCaption(next.titlebar, next.captionSymbol); } catch (e) { /* 忽略 */ }
+        if (prev !== null) { try { paintFrame(); } catch (e) { /* 忽略 */ } }
+      }
+      return next;
+    }
+
+    let lastToken = null;
+    /** 轮询里盯 token 变化，变了就换包。 */
+    function watchThemeToken() {
+      const t = themeToken();
+      if (t === '') return;
+      if (lastToken === null) { lastToken = t; return; }
+      if (t !== lastToken) { lastToken = t; try { pack(); } catch (e) { /* 忽略 */ } }
+    }
+
+
     /**
      * 顶部 40px 那条是"外壳自己的背景"：Windows 下 .mP3x-q_frame 有
      * padding-top: 40px，背景取 --dsw-specific-sidebar-fill，外面再压一层同色的
@@ -224,7 +272,7 @@
         };
         el.setAttribute('data-dshb-frame', '1');
       }
-      el.style.setProperty('background-color', TITLEBAR, 'important');
+      el.style.setProperty('background-color', pack().titlebar, 'important');
       // 底图不再画在外壳自己的背景上，而是单独一层 #dshb-bg（z-index:-2，负层），
       // 这样动态的视频层（z-index:-1）能夹在"底图"和"内容"中间，又不会盖住任何界面。
       el.style.removeProperty('background-image');
@@ -238,7 +286,7 @@
         bg.setAttribute('aria-hidden', 'true');
         bg.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:-2;' +
           'background-repeat:no-repeat;background-size:cover;background-position:50% 46%;' +
-          'box-shadow:inset 0 0 0 4000px rgba(6,10,19,.10);';
+          'box-shadow:inset 0 0 0 4000px ' + pack().veil + ';';
         el.insertBefore(bg, el.firstChild);
       }
       bg.style.backgroundImage = 'url("' + SCENE_SRC + '")';
@@ -255,7 +303,7 @@
       }
       const pad = getComputedStyle(el).paddingTop;
       bar.style.height = (pad && pad !== '0px') ? pad : '40px';
-      bar.style.background = TITLEBAR;
+      bar.style.background = pack().titlebar;
     }
 
     function unframe() {
@@ -295,6 +343,7 @@
 
     /** 主栏里跟它同尺寸的那几层底色（覆盖层）剥成透明，底图才露得出来。 */
     function paintSurface() {
+      try { pack(); watchThemeToken(); } catch (e) { /* 忽略 */ }
       try {
         const card = cardElement();
         const dark = document.body !== null && document.body.hasAttribute('data-ds-dark-theme');
@@ -563,6 +612,7 @@
     }
 
     function installShellSkin() {
+      try { pack(); } catch (e) { /* 忽略 */ }
       try {
         if (typeof document === 'undefined' || typeof location === 'undefined') return;
         try {
@@ -612,6 +662,9 @@
           'box-shadow:none!important}',
           /* 顶部标题条：外壳那层的 ::before 正好是那 40px 的拖拽区，刷成深蓝黑盖住底图 */
           '[data-dshb-frame]:before{background:#0a0f1c!important}',
+          /* 主栏左上角那个圆角会露出底下的颜色（小三角）—— 直接把圆角抹平，缝隙就没了 */
+          '[class*="_centerCol"]{border-top-left-radius:0!important;border-radius:0!important;',
+          'background-clip:border-box!important}',
           /* 底部状态栏：composerSeat 那条 gradient 到 bg-base 就变成黑边了，
              去掉之后露出主栏底图；它的 z-index 和 sticky 不动，气泡不会被压。 */
           'body[data-ds-dark-theme] [class*="_composerSeat"]{background:transparent!important}',
