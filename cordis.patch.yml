@@ -1,0 +1,15 @@
+# Bundle patch for @local/dsh-boot.
+#
+# This is what makes the package a PROFILE LAYER rather than an inert
+# dependency: the row below mounts the plugin, and the package's `dsh.client`
+# block (package.json) is what gets the browser half served and loaded.
+#
+# A package that declares only `dsh.client` is not installable — both blocks
+# are required (the plugin market's own submission gate rejects the other case
+# with "declares only dsh.client — that alone is not installable").
+#
+# `immediately: true` on the client block keeps the启动幕 in the first frame:
+# the overlay is appended before the app's own [data-dsh-boot] card can show.
+- insert:
+    - id: dsh-boot
+      name: '@local/dsh-boot'

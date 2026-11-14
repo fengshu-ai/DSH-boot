@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Boot screen",
+    "description": "Plays a full-screen boot curtain (title wordmark, load log, progress bar), then a torn-paper sidebar slides in and reveals the snowy main screen; the sidebar is warm paper with pixel pills. Alt+B replays it, ?boot=0 skips it. Non-commercial fan work using The 30 Days of Feeding Ran: all artwork by 赤橙chio, redistribution and commercial use prohibited, credit required for derivative posts (see README)."
+  }
+}

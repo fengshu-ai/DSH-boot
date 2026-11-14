@@ -1,0 +1,112 @@
+{
+  "name": "@local/dsh-boot",
+  "version": "1.0.0",
+  "private": true,
+  "description": "启动界面：游戏标题字 → 载入日志与进度 → 撕纸侧栏滑入 → 纸化开露出主界面；主界面带雪景底图、米色纸侧栏与像素胶囊。",
+  "type": "module",
+  "main": "./index.js",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "icon.svg",
+    "README.md",
+    "BUILD.md",
+    "CREDITS.md",
+    "LICENSE",
+    "licenses/"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "cordis",
+    "boot-animation",
+    "splash",
+    "theme",
+    "web-ui",
+    "pixel"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "assets": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/prepare-assets.ps1",
+    "build": "node src/patch.cjs",
+    "check": "node --check client.js && node --check index.js",
+    "verify": "npm run build && npm run check"
+  },
+  "peerDependencies": {
+    "react": "^18.2.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  },
+  "dsh": {
+    "engines": {
+      "dsh": ">=0.2.0-rc.1"
+    },
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-slots"
+      ]
+    }
+  },
+  "dshWorkshop": {
+    "schema": "omdsh-workshop-package/v1",
+    "type": "plugin",
+    "integration": {
+      "protocol": "harness-profile",
+      "artifact": "cordis.patch.yml"
+    },
+    "install": {
+      "mode": "transactional",
+      "adapter": "profile-bundle",
+      "failurePolicy": "generation-rollback",
+      "touchesCurrentBeforeActivation": false
+    },
+    "lifecycle": {
+      "activation": "restart-profile",
+      "dispose": "supported"
+    },
+    "permissions": [
+      "dom:overlay",
+      "browser:local-storage",
+      "desktop:titlebar-overlay"
+    ],
+    "compatibility": {
+      "dshVersions": [
+        "0.2.0-rc.1"
+      ]
+    },
+    "capability": {
+      "id": "boot-splash",
+      "kind": "ui",
+      "invocation": "启动 desktop profile 后看首帧：document.querySelector('.dshb') 覆盖整个外壳并播放约 4.2s 的启动幕；结束后主界面侧栏由 [class*=\"_sidebarCol\"] 的纸面与像素胶囊构成，左下角落款是 #dshb-credit 里的游戏标题字。",
+      "expected": "启动期间原生 [data-dsh-boot] 卡片被覆盖层挡住；4.2s 后覆盖层淡出，米色纸侧栏、六个像素胶囊（N/P/A/C/D/M）、雪景主栏与标题字落款一起出现。"
+    },
+    "evidence": {
+      "install": null,
+      "failureIsolation": null,
+      "hotReload": null,
+      "remove": null
+    }
+  }
+}

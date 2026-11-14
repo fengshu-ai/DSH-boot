@@ -1,0 +1,11 @@
+# 构建产物（内嵌原作素材，绝不能提交）
+client.js
+assets/
+node_modules/
+*.b64
+
+# 本地抓的截图/录屏（含原作美术）
+shots/
+*.mp4
+*.png
+!icon.svg
