@@ -141,8 +141,7 @@
       // z-index:-1：夹在 #dshb-bg（-2）和所有内容之间 —— 负层永远在普通内容下面，
       // 不会像 z-index:0 那样把一个 position:static 的整页界面盖掉。
       v.style.cssText = 'position:absolute;pointer-events:none;z-index:-1;object-fit:fill;' +
-        'filter:brightness(.62);opacity:0;transition:opacity .9s ease;' +
-        'border-radius:var(--dsh-windows-content-radius,12px) 0 0 0;';
+        'filter:brightness(.62);opacity:0;transition:opacity .9s ease';
       v.addEventListener('canplay', function () {
         v.style.opacity = '1';
         try { const p = v.play(); if (p && p.catch) p.catch(function () {}); } catch (e) { /* 自动播放被挡就算了 */ }
@@ -202,32 +201,6 @@
     /** 顶部标题条的目标色：和 Electron 标题栏覆盖层（─ □ ✕ 那块）同一个深蓝黑。 */
     const TITLEBAR = '#0a0f1c';
 
-    /** 深/浅两套皮肤：按 DSH 当前主题（body[data-ds-dark-theme]）二选一。 */
-    function isDarkTheme() {
-      try { return document.body !== null && document.body.hasAttribute('data-ds-dark-theme'); }
-      catch (e) { return true; }
-    }
-    function titlebarColor() { return isDarkTheme() ? '#0a0f1c' : '#efe8dc'; }
-    /** 动态底图的视频真的能播了吗（能播才让 frame 透明，否则保持不透明底色）。 */
-    function videoReady() {
-      try {
-        if (!motionWanted()) return false;
-        const v = document.getElementById('dshb-scene');
-        return v !== null && v.readyState >= 2 && v.videoWidth > 0;
-      } catch (e) { return false; }
-    }
-    function surfaceColor() { return isDarkTheme() ? '#0b0f16' : '#f4efe6'; }
-    function sceneVeil() { return isDarkTheme() ? 'rgba(6,10,19,.56)' : 'rgba(250,247,241,.06)'; }
-    /** 把当前主题写到 <html data-dshb-theme>，CSS 靠它挑深/浅那一套。 */
-    function syncTheme() {
-      try {
-        const v = isDarkTheme() ? 'dark' : 'light';
-        const root = document.documentElement;
-        if (root.dataset.dshbTheme !== v) root.dataset.dshbTheme = v;
-      } catch (e) { /* 忽略 */ }
-    }
-
-
     /**
      * 顶部 40px 那条是"外壳自己的背景"：Windows 下 .mP3x-q_frame 有
      * padding-top: 40px，背景取 --dsw-specific-sidebar-fill，外面再压一层同色的
@@ -250,7 +223,7 @@
         };
         el.setAttribute('data-dshb-frame', '1');
       }
-      el.style.setProperty('background-color', videoReady() ? 'transparent' : titlebarColor(), 'important');
+      el.style.setProperty('background-color', TITLEBAR, 'important');
       // 底图不再画在外壳自己的背景上，而是单独一层 #dshb-bg（z-index:-2，负层），
       // 这样动态的视频层（z-index:-1）能夹在"底图"和"内容"中间，又不会盖住任何界面。
       el.style.removeProperty('background-image');
@@ -264,34 +237,10 @@
         bg.setAttribute('aria-hidden', 'true');
         bg.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:-2;' +
           'background-repeat:no-repeat;background-size:cover;background-position:50% 46%;' +
-          'box-shadow:inset 0 0 0 4000px ' + sceneVeil() + ';';
+          'box-shadow:inset 0 0 0 4000px rgba(6,10,19,.42);';
         el.insertBefore(bg, el.firstChild);
       }
       bg.style.backgroundImage = 'url("' + SCENE_SRC + '")';
-      try {
-        const v = document.getElementById('dshb-scene');
-        if (v !== null) {
-          v.style.filter = isDarkTheme() ? 'brightness(.62)' : 'brightness(1.02) saturate(1.02)';
-        }
-      } catch (e) { /* 忽略 */ }
-      try {
-        const card = cardElement();
-        if (card !== null) {
-          const fit = sceneFit(card.clientWidth || window.innerWidth, card.clientHeight || window.innerHeight);
-          // 动态底图开着时，视频在下面那层，这里只铺一层薄幕，别把视频盖住
-          // 视频真的能播了才撤掉静帧，否则先拿静帧顶着，别留一片空白
-          const dyn = videoReady();
-          const veil = dyn
-            ? (isDarkTheme() ? 'rgba(6,10,19,.30)' : 'rgba(250,247,241,.06)')
-            : sceneVeil();
-          card.style.setProperty('background-color', dyn ? 'transparent' : surfaceColor(), 'important');
-          card.style.setProperty('background-image', 'linear-gradient(' + veil + ',' + veil + ')' +
-            (dyn ? '' : ', url("' + SCENE_SRC + '")'), 'important');
-          card.style.setProperty('background-size', dyn ? '100% 100%' : '100% 100%, ' + fit.w + 'px ' + fit.h + 'px', 'important');
-          card.style.setProperty('background-position', dyn ? '0 0' : '0 0, ' + fit.x + 'px ' + fit.y + 'px', 'important');
-          card.style.setProperty('background-repeat', 'no-repeat', 'important');
-        }
-      } catch (e) { /* 忽略 */ }
       // 顶部那 40px 必须是深蓝黑：外壳自带的 ::before 不一定还在（拿到的 _frame
       // 可能是内层那一圈），所以自己压一条，高度取外壳的 padding-top。
       let bar = document.getElementById('dshb-topbar');
@@ -305,7 +254,7 @@
       }
       const pad = getComputedStyle(el).paddingTop;
       bar.style.height = (pad && pad !== '0px') ? pad : '40px';
-      bar.style.background = titlebarColor();
+      bar.style.background = TITLEBAR;
     }
 
     function unframe() {
@@ -345,10 +294,10 @@
 
     /** 主栏里跟它同尺寸的那几层底色（覆盖层）剥成透明，底图才露得出来。 */
     function paintSurface() {
-      syncTheme();
       try {
         const card = cardElement();
-        if (card === null) {
+        const dark = document.body !== null && document.body.hasAttribute('data-ds-dark-theme');
+        if (card === null || !dark) {
           if (card !== null) card.classList.remove(SKIN_CLASS);
           unpeel();
           unframe();
@@ -382,9 +331,34 @@
             credit.style.bottom = '';
             credit.classList.toggle('dshb-credit-off', wouldOverlap);
             credit.style.transform = wouldOverlap ? 'translateY(4px)' : 'none';
-            // HARNESS 徽章用 DSH 自己那版（SVG 里就是深蓝块+白字），不再叠加文字层，
-            // 之前叠的那层会和 SVG 自带字错位，看起来像重影。
-            { const stale = document.getElementById('dshb-chip'); if (stale) stale.remove(); }
+            // 品牌行 HARNESS 那个徽章是 SVG 里画死的深蓝块，字也是深蓝 → 用一层米色字盖回去
+            const name = col.querySelector('[class*="_brandName"]');
+            const svg = name === null ? null : name.querySelector('svg');
+            // 侧栏收起时品牌行整块被拆掉/挪出窗口，徽章盖片会孤零零浮在聊天区标题上
+            if (svg === null) {
+              const stale = document.getElementById('dshb-chip');
+              if (stale) stale.style.display = 'none';
+            } else {
+              {
+                const r = svg.getBoundingClientRect();
+                const chip = document.getElementById('dshb-chip');
+                const el = chip || document.createElement('span');
+                if (!chip) {
+                  el.id = 'dshb-chip';
+                  el.setAttribute('aria-hidden', 'true');
+                  el.textContent = 'HARNESS';
+                  el.style.cssText = 'position:fixed;display:flex;align-items:center;justify-content:center;' +
+                    'font:700 9px/1 "Segoe UI",Arial,sans-serif;letter-spacing:.9px;color:#f4f1e8;' +
+                    'pointer-events:none;z-index:2147482000';
+                  document.body.appendChild(el);
+                }
+                el.style.left = Math.round(r.left + r.width * 0.665) + 'px';
+                el.style.top = Math.round(r.top) + 'px';
+                el.style.width = Math.round(r.width * 0.335) + 'px';
+                el.style.height = Math.round(r.height) + 'px';
+                el.style.display = (r.width < 8 || r.right < 40) ? 'none' : 'flex';
+              }
+            }
           }
         } catch (e) { /* 落款画不出来不影响主界面 */ }
         card.classList.add(SKIN_CLASS);
@@ -637,13 +611,9 @@
           'box-shadow:none!important}',
           /* 顶部标题条：外壳那层的 ::before 正好是那 40px 的拖拽区，刷成深蓝黑盖住底图 */
           '[data-dshb-frame]:before{background:#0a0f1c!important}',
-          '#dshb-chip{display:none!important}',
-          /* 窗口边缘（body）跟着主题上色，避免底栏露出一条白边 */
-          'html[data-dshb-theme="dark"] body{background-color:#0b0f16!important}',
-          'html[data-dshb-theme="light"] body{background-color:#efe8dc!important}',
           /* 底部状态栏：composerSeat 那条 gradient 到 bg-base 就变成黑边了，
              去掉之后露出主栏底图；它的 z-index 和 sticky 不动，气泡不会被压。 */
-          '[class*="_composerSeat"]{background:transparent!important}',
+          'body[data-ds-dark-theme] [class*="_composerSeat"]{background:transparent!important}',
           /* 插件页那种整页视图的"页头条"，底色不是画在元素上，而是画在
              .pageBar[data-natural]::before 这个伪元素里（高度跟着滚动收起），
              inline 改不到伪元素，只能按类名尾巴压掉（类名被 CSS modules 加了哈希）。 */
