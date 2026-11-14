@@ -61,3 +61,11 @@ npm run build    # 生成 client.js
 ## 许可
 
 本仓库**代码**为 MIT（见 [LICENSE](LICENSE)）；原作素材与 Fusion Pixel 字体按各自的许可使用，且**不随本仓库分发**。
+
+## 直接下载安装包
+
+不想自己构建的话，用仓库里的打包文件：
+
+`release/dsh-boot-1.0.0.zip`（约 2.6 MB，含已构建的 client.js、主题包 packs/、清单与许可）
+
+解压后把整个目录放进 profile 的 `node_modules/@local/dsh-boot/`，或在插件设置里用本地目录安装。

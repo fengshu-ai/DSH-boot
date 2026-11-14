@@ -23,7 +23,8 @@
     "HANDOFF.md",
     "CREDITS.md",
     "licenses/",
-    "packs/"
+    "packs/",
+    "INSTALL.md"
   ],
   "license": "MIT",
   "keywords": [
