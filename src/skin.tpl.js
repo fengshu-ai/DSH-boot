@@ -268,6 +268,14 @@
         el.insertBefore(bg, el.firstChild);
       }
       bg.style.backgroundImage = 'url("' + SCENE_SRC + '")';
+      // 视频层在整窗外壳最底下：浅色模式下把视频压淡一点，
+      // 否则各种圆角（输入框、缩略图）的缺口都会露出深色视频。
+      try {
+        const v = document.getElementById('dshb-scene');
+        if (v !== null) {
+          v.style.filter = isDarkTheme() ? 'brightness(.62)' : 'brightness(1.04) saturate(.92) opacity(.42)';
+        }
+      } catch (e) { /* 忽略 */ }
       try {
         const card = cardElement();
         if (card !== null) {
