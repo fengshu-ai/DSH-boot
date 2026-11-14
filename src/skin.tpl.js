@@ -319,18 +319,10 @@
             const creditHtml = '<img src="' + TITLE_SIDE + '" alt="饲养染的 30 DAYS">'
               + '<em>使用素材来自画师【赤橙chio】哇</em>';
             if (credit.innerHTML !== creditHtml) credit.innerHTML = creditHtml;
-            // 落款顶边贴在列表末尾那条线上；下方放不下就收起来
-            const area = col.querySelector('[class*="_scrollArea"]');
-            const colRect = col.getBoundingClientRect();
-            let wouldOverlap = col.clientWidth < 220;
-            if (!wouldOverlap && area !== null) {
-              const kid = area.lastElementChild;
-              const contentBottom = kid === null ? colRect.top : kid.getBoundingClientRect().bottom;
-              credit.style.bottom = 'auto';
-              credit.style.top = Math.round(contentBottom - colRect.top + 10) + 'px';
-              const fits = contentBottom - colRect.top + 10 + credit.offsetHeight <= col.clientHeight - 30;
-              wouldOverlap = !fits;
-            }
+            // 固定在左下角（离底 24px）；侧栏太窄/太矮时收起
+            const wouldOverlap = col.clientWidth < 220 || col.clientHeight < 460;
+            credit.style.top = '';
+            credit.style.bottom = '';
             credit.classList.toggle('dshb-credit-off', wouldOverlap);
             // 品牌行 HARNESS 那个徽章是 SVG 里画死的深蓝块，字也是深蓝 → 用一层米色字盖回去
             const name = col.querySelector('[class*="_brandName"]');
@@ -673,12 +665,12 @@
           'background-image:radial-gradient(150% 110% at 26% -14%,#F4F2EE 0%,#F0EBE3 45%,#EBE6DC 100%)!important;',
           'background-size:auto!important;background-repeat:no-repeat!important}',
           '[class*="_sidebarCol"]::after{display:none!important}',
-          '#dshb-credit{position:absolute;left:30px;bottom:44px;display:flex;flex-direction:column;align-items:flex-start;gap:2px;',
+          '#dshb-credit{position:absolute;left:30px;bottom:44px;display:flex;flex-direction:column;align-items:flex-start;gap:4px;',
           'pointer-events:none;z-index:4;color:#15171c;transition:opacity .18s ease}',
           '#dshb-credit.dshb-credit-off{opacity:0!important;visibility:hidden!important}',
-          '#dshb-credit img{display:block;width:84px;height:auto;opacity:.9}',
-          '#dshb-credit em{display:block;font:400 7.5px/1.2 "Microsoft YaHei UI",sans-serif;',
-          'letter-spacing:.3px;color:#6b7aa8;margin-top:1px;font-style:normal}',
+          '#dshb-credit img{display:block;width:104px;height:auto;opacity:.92}',
+          '#dshb-credit em{display:block;font:400 8px/1.2 "Microsoft YaHei UI",sans-serif;',
+          'letter-spacing:.4px;color:#6b7aa8;margin-top:2px;font-style:normal}',
           '#dshb-credit b{display:block;color:#111;',
           'font:800 13px/1.1 "Microsoft YaHei UI","Segoe UI",Arial,sans-serif;letter-spacing:.2px}',
           '#dshb-credit span{display:block;font:400 8.5px/1.1 "Segoe UI",Arial,sans-serif;',
