@@ -220,6 +220,23 @@
       return 'dark';
     }
 
+    /** 浅色包用自绘字标（原生 SVG 里叠了 HARNESS 徽章，浅色下那个重影很明显）。 */
+    function brandText(on) {
+      try {
+        const name = document.querySelector('[class*="_brandName"]');
+        if (name === null) return;
+        let el = document.getElementById('dshb-brand');
+        if (on) {
+          if (el === null) {
+            el = document.createElement('span');
+            el.id = 'dshb-brand';
+            el.textContent = 'deepseek';
+            name.appendChild(el);
+          }
+        } else if (el !== null) el.remove();
+      } catch (e) { /* 忽略 */ }
+    }
+
     let packId = null;
     /** 取当前主题对应的包；切换时换掉 html 标记、包 CSS 和窗口按钮色。 */
     function pack() {
@@ -235,6 +252,7 @@
           if (st.textContent !== next.css) st.textContent = next.css;
         } catch (e) { /* 忽略 */ }
         try { window.__dshbCaption = { bg: next.titlebar, sym: next.captionSymbol }; } catch (e) { /* 忽略 */ }
+        try { brandText(next.id === 'light'); } catch (e) { /* 忽略 */ }
         try { const sc = (typeof setCaption === 'function') ? setCaption : window.__dshbSetCaption; if (typeof sc === 'function') sc(next.titlebar, next.captionSymbol); } catch (e) { /* 忽略 */ }
         if (prev !== null) { try { paintFrame(); } catch (e) { /* 忽略 */ } }
       }
@@ -666,6 +684,18 @@
           /* 主栏左上角那个圆角会露出底下的颜色（小三角）—— 直接把圆角抹平，缝隙就没了 */
           '[class*="_centerCol"]{border-top-left-radius:0!important;border-radius:0!important;',
           'background-clip:border-box!important}',
+          /* HARNESS 徽章的文字别再被像素字体带跑（SVG <text> 会继承父级 font-family） */
+          '[class*="_brand"] svg text, [class*="_brandName"] svg text{',
+          'font-family:"Segoe UI",Arial,"Noto Sans SC",sans-serif!important;',
+          'text-shadow:none!important;filter:none!important}',
+          /* 品牌位（deepseek 字标 + HARNESS 徽章）别继承胶囊的文字阴影，否则像重影 */
+          '[class*="_brandName"], [class*="_brandName"] *{text-shadow:none!important;filter:none!important}',
+          /* 徽章字母挤在一起：胶囊按钮的 letter-spacing/字号被 SVG <text> 继承了，
+             这里用更高优先级把它还原 */
+          '[class*="_sidebarCol"] button[class*="_brand"] svg text,',
+          '[class*="_sidebarCol"] button[class*="_brand"] svg *{',
+          'font-family:"Segoe UI",Arial,"Noto Sans SC",sans-serif!important;',
+          'letter-spacing:0!important;font-size:11px!important;text-shadow:none!important}',
           /* 底部状态栏：composerSeat 那条 gradient 到 bg-base 就变成黑边了，
              去掉之后露出主栏底图；它的 z-index 和 sticky 不动，气泡不会被压。 */
           '[class*="_composerSeat"]{background:transparent!important}',
@@ -704,7 +734,7 @@
           /* 像素胶囊（按钮本身 + 里面的文字）优先级抬高，别被上面那条吃掉 */
           '[class*="_sidebarCol"] button[class*="_panelRow"] *,',
           '[class*="_sidebarCol"] button[class*="_newSession"] *,',
-          '[class*="_sidebarCol"] button[class*="_brand"] *{font-family:"dshb-caps","dshb-text","Noto Sans SC",sans-serif!important;',
+          '[class*="_sidebarCol"] button[class*="_brand"] :not(svg):not(svg *){font-family:"dshb-caps","dshb-text","Noto Sans SC",sans-serif!important;',
           'font-size:inherit!important;letter-spacing:inherit!important}',
           /* 落款 S.T.A.R.S 保持无衬线，别跟着变宋体 */
           '#dshb-credit b{font-family:"Microsoft YaHei UI","Segoe UI",Arial,sans-serif!important;font-size:13px!important;letter-spacing:.2px!important}',

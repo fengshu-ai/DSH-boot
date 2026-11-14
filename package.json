@@ -1,6 +1,6 @@
 {
   "name": "@local/dsh-boot",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "启动界面：游戏标题字 → 载入日志与进度 → 撕纸侧栏滑入 → 纸化开露出主界面；主界面带雪景底图、米色纸侧栏与像素胶囊。",
   "type": "module",
