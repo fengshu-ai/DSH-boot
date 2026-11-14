@@ -330,6 +330,7 @@
             credit.style.top = '';
             credit.style.bottom = '';
             credit.classList.toggle('dshb-credit-off', wouldOverlap);
+            credit.style.transform = wouldOverlap ? 'translateY(4px)' : 'none';
             // 品牌行 HARNESS 那个徽章是 SVG 里画死的深蓝块，字也是深蓝 → 用一层米色字盖回去
             const name = col.querySelector('[class*="_brandName"]');
             const svg = name === null ? null : name.querySelector('svg');
@@ -672,8 +673,8 @@
           'background-size:auto!important;background-repeat:no-repeat!important}',
           '[class*="_sidebarCol"]::after{display:none!important}',
           '#dshb-credit{position:absolute;left:30px;bottom:44px;display:flex;flex-direction:column;align-items:flex-start;gap:4px;',
-          'pointer-events:none;z-index:4;color:#15171c;transition:opacity .18s ease}',
-          '#dshb-credit.dshb-credit-off{opacity:0!important;visibility:hidden!important}',
+          'pointer-events:none;z-index:4;color:#15171c;transition:opacity .28s ease, transform .28s ease}',
+          '#dshb-credit.dshb-credit-off{opacity:0!important;pointer-events:none}',
           '#dshb-credit img{display:block;width:104px;height:auto;opacity:.92}',
           '#dshb-credit em{display:block;font:400 8px/1.2 "Microsoft YaHei UI",sans-serif;',
           'letter-spacing:.4px;color:#6b7aa8;margin-top:2px;font-style:normal}',
