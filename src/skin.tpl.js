@@ -612,6 +612,7 @@
     }
 
     function installShellSkin() {
+      { const stale = document.getElementById('dshb-probe'); if (stale) stale.remove(); }
       try { pack(); } catch (e) { /* 忽略 */ }
       try {
         if (typeof document === 'undefined' || typeof location === 'undefined') return;
