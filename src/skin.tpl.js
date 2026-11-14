@@ -217,7 +217,7 @@
       } catch (e) { return false; }
     }
     function surfaceColor() { return isDarkTheme() ? '#0b0f16' : '#f4efe6'; }
-    function sceneVeil() { return isDarkTheme() ? 'rgba(6,10,19,.56)' : 'rgba(250,247,241,.62)'; }
+    function sceneVeil() { return isDarkTheme() ? 'rgba(6,10,19,.56)' : 'rgba(250,247,241,.06)'; }
     /** 把当前主题写到 <html data-dshb-theme>，CSS 靠它挑深/浅那一套。 */
     function syncTheme() {
       try {
@@ -269,6 +269,12 @@
       }
       bg.style.backgroundImage = 'url("' + SCENE_SRC + '")';
       try {
+        const v = document.getElementById('dshb-scene');
+        if (v !== null) {
+          v.style.filter = isDarkTheme() ? 'brightness(.62)' : 'brightness(1.02) saturate(1.02)';
+        }
+      } catch (e) { /* 忽略 */ }
+      try {
         const card = cardElement();
         if (card !== null) {
           const fit = sceneFit(card.clientWidth || window.innerWidth, card.clientHeight || window.innerHeight);
@@ -276,7 +282,7 @@
           // 视频真的能播了才撤掉静帧，否则先拿静帧顶着，别留一片空白
           const dyn = videoReady();
           const veil = dyn
-            ? (isDarkTheme() ? 'rgba(6,10,19,.30)' : 'rgba(250,247,241,.62)')
+            ? (isDarkTheme() ? 'rgba(6,10,19,.30)' : 'rgba(250,247,241,.06)')
             : sceneVeil();
           card.style.setProperty('background-color', dyn ? 'transparent' : surfaceColor(), 'important');
           card.style.setProperty('background-image', 'linear-gradient(' + veil + ',' + veil + ')' +
