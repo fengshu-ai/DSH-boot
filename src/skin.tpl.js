@@ -319,6 +319,12 @@
             const creditHtml = '<img src="' + TITLE_SIDE + '" alt="饲养染的 30 DAYS">'
               + '<em>使用素材来自画师【赤橙chio】哇</em>';
             if (credit.innerHTML !== creditHtml) credit.innerHTML = creditHtml;
+            // 列表一长就会从落款后面穿过去：内容快占满滚动区时把落款收起来
+            const scrollArea = col.querySelector('[class*="_scrollArea"]');
+            const reserve = credit.offsetHeight + 18;
+            const collapsed = col.clientWidth < 220;   // 侧栏收起成窄条时不显示
+            const wouldOverlap = collapsed || (scrollArea !== null && scrollArea.scrollHeight + reserve > scrollArea.clientHeight);
+            credit.classList.toggle('dshb-credit-off', wouldOverlap);
             // 品牌行 HARNESS 那个徽章是 SVG 里画死的深蓝块，字也是深蓝 → 用一层米色字盖回去
             const name = col.querySelector('[class*="_brandName"]');
             const svg = name === null ? null : name.querySelector('svg');
@@ -660,11 +666,9 @@
           'background-image:radial-gradient(150% 110% at 26% -14%,#F4F2EE 0%,#F0EBE3 45%,#EBE6DC 100%)!important;',
           'background-size:auto!important;background-repeat:no-repeat!important}',
           '[class*="_sidebarCol"]::after{display:none!important}',
-          '[class*="_sidebarCol"] [class*="_scrollArea"]{margin-bottom:140px!important;padding-bottom:0!important;',
-          '-webkit-mask-image:linear-gradient(180deg,#000 calc(100% - 30px),transparent 100%);',
-          'mask-image:linear-gradient(180deg,#000 calc(100% - 30px),transparent 100%)}',
-          '#dshb-credit{position:absolute;left:0;right:0;bottom:38px;display:flex;flex-direction:column;align-items:flex-start;gap:6px;',
-          'padding:0 0 0 30px;pointer-events:none;z-index:999;color:#15171c}',
+          '#dshb-credit{position:absolute;left:30px;bottom:44px;display:flex;flex-direction:column;align-items:flex-start;gap:6px;',
+          'pointer-events:none;z-index:4;color:#15171c;transition:opacity .18s ease}',
+          '#dshb-credit.dshb-credit-off{opacity:0!important;visibility:hidden!important}',
           '#dshb-credit img{display:block;width:150px;height:auto;opacity:.92}',
           '#dshb-credit em{display:block;font:400 9px/1.2 "Microsoft YaHei UI",sans-serif;',
           'letter-spacing:.6px;color:#6b7aa8;margin-top:4px;font-style:normal}',
