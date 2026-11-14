@@ -141,7 +141,7 @@
         /** 雪景上方那层薄幕：深色压暗、浅色提亮，保证文字还看得清。 */
     function veil() {
       try {
-        return 'rgba(6,10,19,.42)';
+        return 'rgba(6,10,19,.56)';
       } catch (e) { return 'rgba(6,10,19,.42)'; }
     }
 
@@ -282,12 +282,12 @@ function showVideo() {
         bar = document.createElement('div');
         bar.id = 'dshb-topbar';
         bar.setAttribute('aria-hidden', 'true');
-        bar.style.cssText = 'position:absolute;left:0;right:0;top:0;pointer-events:none;z-index:3;';
+        bar.style.cssText = 'position:absolute;left:0;right:0;top:0;pointer-events:none;z-index:60;';
         el.appendChild(bar);
       }
       const pad = getComputedStyle(el).paddingTop;
       bar.style.height = (pad && pad !== '0px') ? pad : '40px';
-      bar.style.background = TITLEBAR;
+      bar.style.setProperty('background', TITLEBAR, 'important');
     }
 
     function unframe() {
@@ -329,8 +329,8 @@ function showVideo() {
     function paintSurface() {
       try {
         const card = cardElement();
-        const dark = document.body !== null && document.body.hasAttribute('data-ds-dark-theme');
-        if (card === null || !dark) {
+        // 皮肤自己会同时处理深浅两种主题（侧栏纸色 / 主栏深色），不再要求系统处于深色
+        if (card === null) {
           if (card !== null) card.classList.remove(SKIN_CLASS);
           unpeel();
           unframe();
