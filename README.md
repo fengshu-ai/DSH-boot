@@ -69,3 +69,15 @@ npm run build    # 生成 client.js
 `release/dsh-boot-1.0.0.zip`（约 2.6 MB，含已构建的 client.js、主题包 packs/、清单与许可）
 
 解压后把整个目录放进 profile 的 `node_modules/@local/dsh-boot/`，或在插件设置里用本地目录安装。
+
+## 1.1.0 整合包（浅色 + 深色）
+
+`release/dsh-boot-1.1.0.zip`（约 5.8 MB）
+
+```
+dsh-boot/            自动切换版（含 packs/dark.json、packs/light.json）
+versions/dark/       深色整包
+versions/light/      浅色整包
+switch-skin.ps1 与 *.cmd   切换入口
+使用说明.md
+```
