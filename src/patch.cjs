@@ -36,7 +36,7 @@ let tpl = lf(fs.readFileSync(tplFile, 'utf8'))
   .split('__TITLE_SIDE__').join('data:image/png;base64,' + titleSide);
 tpl = '    /* dshb-skin:begin */\n' + tpl + '    /* dshb-skin:end */\n';
 
-const a1 = '        // 常驻：把窗口标题栏从默认中性灰换成启动界面的深蓝黑\n        setCaption(CAPTION_REST, CAPTION_SYMBOL);\n';
+const a1 = '        // 常驻：把窗口标题栏从默认中性灰换成启动界面的深蓝黑\n        setCaption(captionRest(), captionSymbol());\n';
 const a2 = "    return {\n      inject: ['slots'],\n";
 
 const c1 = src.split(a1).length - 1;

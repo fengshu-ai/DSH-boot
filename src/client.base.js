@@ -35,6 +35,26 @@ window.__ModuleLoader__.load({
     const CAPTION_PROBE = 'body>span[style*="dsw-specific-sidebar-fill"]';
     const CAPTION_REST = '#0a0f1c';
     const CAPTION_SYMBOL = '#7aaaff';
+    /** 窗口右上角按钮条：深色主题深底蓝字，浅色主题纸底蓝字。 */
+    function captionDark() {
+      try { return document.body !== null && document.body.hasAttribute('data-ds-dark-theme'); }
+      catch (e) { return true; }
+    }
+    function captionRest() { return captionDark() ? CAPTION_REST : '#efe8dc'; }
+    function captionSymbol() { return captionDark() ? CAPTION_SYMBOL : '#3e519d'; }
+
+    // 主题一换，窗口按钮条立刻跟着换（不轮询，避免把启动幕的透明标题条覆盖掉）
+    try {
+      const watchTheme = function () {
+        try {
+          new MutationObserver(function () {
+            try { setCaption(captionRest(), captionSymbol()); } catch (e) { /* 忽略 */ }
+          }).observe(document.body, { attributes: true, attributeFilter: ['data-ds-dark-theme'] });
+        } catch (e) { /* 忽略 */ }
+      };
+      if (document.body) watchTheme();
+      else document.addEventListener('DOMContentLoaded', watchTheme, { once: true });
+    } catch (e) { /* 忽略 */ }
 
     function setCaption(fill, symbol) {
       try {
@@ -407,7 +427,7 @@ window.__ModuleLoader__.load({
         timers.push(setTimeout(() => {
           const layer = document.querySelector('.dshb');
           if (layer) layer.style.pointerEvents = 'none';
-          setCaption(CAPTION_REST, CAPTION_SYMBOL);
+          setCaption(captionRest(), captionSymbol());
         }, 7200));
 
         const bail = (e) => {
@@ -438,7 +458,7 @@ window.__ModuleLoader__.load({
         raf = requestAnimationFrame(tick);
 
         return () => {
-          setCaption(CAPTION_REST, CAPTION_SYMBOL);
+          setCaption(captionRest(), captionSymbol());
           timers.forEach(clearTimeout);
           cancelAnimationFrame(raf);
           window.removeEventListener('keydown', bail, true);
@@ -474,7 +494,7 @@ window.__ModuleLoader__.load({
       inject: ['slots'],
       apply(ctx) {
         // 常驻：把窗口标题栏从默认中性灰换成启动界面的深蓝黑
-        setCaption(CAPTION_REST, CAPTION_SYMBOL);
+        setCaption(captionRest(), captionSymbol());
         // 常驻：主界面底图（雪景 + 叠底黑），侧栏与各面板不受影响
         installShellSkin();
         try {
