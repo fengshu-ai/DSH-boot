@@ -6,3 +6,6 @@ node_modules/
 # 本地截图 / 录屏
 shots/
 *.mp4
+!docs/*.mp4
+!docs/*.jpg
+!docs/*.png
