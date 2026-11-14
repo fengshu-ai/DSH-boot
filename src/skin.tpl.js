@@ -17,7 +17,11 @@
 
     /** S.T.A.R.S 星标（从插件 icon.svg 里抠出来的 PNG）。 */
 
+    const STAR_SRC = '__STAR_SRC__';
+
     /** 侧栏右边沿的撕纸白边贴图（48×1024，白色 + alpha）。 */
+
+    const EDGE_SRC = '__EDGE_SRC__';
     /** gui/main_menu.png 裁掉左边纸 + 压暗（1600×1271，JPEG q87）。 */
     const SCENE_SRC = '__SCENE_SRC__';
     /** 游戏主界面那段循环动画（images/m3.webm 裁纸+压暗到同一帧位，10s 无缝循环）。 */
@@ -672,6 +676,19 @@
           'background-image:radial-gradient(150% 110% at 26% -14%,#F4F2EE 0%,#F0EBE3 45%,#EBE6DC 100%)!important;',
           'background-size:auto!important;background-repeat:no-repeat!important}',
           '[class*="_sidebarCol"]::after{display:none!important}',
+          'body:not([data-ds-dark-theme]){',
+          '--dsw-static-neutral-bluish-00:#faf7f1;--dsw-static-neutral-bluish-50:#f6f2ea;',
+          '--dsw-static-neutral-bluish-55:#f4efe6;--dsw-static-neutral-bluish-60:#f3eee4;',
+          '--dsw-static-neutral-bluish-75:#efe9dd;--dsw-static-neutral-bluish-90:#ece5d8;',
+          '--dsw-static-neutral-bluish-100:#e9e2d4;--dsw-static-neutral-bluish-150:#e6dfd0;',
+          '--dsw-static-neutral-bluish-200:#ddd5c4;--dsw-static-neutral-bluish-300:#c9c0ae;',
+          '--dsw-static-neutral-bluish-310:#c3b9a6;--dsw-static-neutral-bluish-400:#a89e8c;',
+          '--dsw-static-neutral-bluish-500:#928876;--dsw-static-neutral-bluish-600:#7c7364;',
+          '--dsw-static-neutral-bluish-700:#625a4d;--dsw-static-neutral-bluish-750:#4a443a;',
+          '--dsw-static-neutral-bluish-800:#3a352c;--dsw-static-neutral-bluish-850:#322e26;',
+          '--dsw-static-neutral-bluish-875:#2a2721;--dsw-static-neutral-bluish-900:#221f1a;',
+          '--dsw-static-neutral-bluish-950:#1a1815;--dsw-static-neutral-bluish-1000:#14120f;',
+          'background-color:#faf7f1!important}',
           '#dshb-credit{position:absolute;left:30px;bottom:44px;display:flex;flex-direction:column;align-items:flex-start;gap:4px;',
           'pointer-events:none;z-index:4;color:#15171c;transition:opacity .28s ease, transform .28s ease}',
           '#dshb-credit.dshb-credit-off{opacity:0!important;pointer-events:none}',
