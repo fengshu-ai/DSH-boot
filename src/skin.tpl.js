@@ -141,7 +141,8 @@
       // z-index:-1：夹在 #dshb-bg（-2）和所有内容之间 —— 负层永远在普通内容下面，
       // 不会像 z-index:0 那样把一个 position:static 的整页界面盖掉。
       v.style.cssText = 'position:absolute;pointer-events:none;z-index:-1;object-fit:fill;' +
-        'filter:brightness(.62);opacity:0;transition:opacity .9s ease';
+        'filter:brightness(1);opacity:0;transition:opacity .9s ease;' +
+        'border-radius:var(--dsh-windows-content-radius,12px) 0 0 0';
       v.addEventListener('canplay', function () {
         v.style.opacity = '1';
         try { const p = v.play(); if (p && p.catch) p.catch(function () {}); } catch (e) { /* 自动播放被挡就算了 */ }
@@ -237,7 +238,7 @@
         bg.setAttribute('aria-hidden', 'true');
         bg.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:-2;' +
           'background-repeat:no-repeat;background-size:cover;background-position:50% 46%;' +
-          'box-shadow:inset 0 0 0 4000px rgba(6,10,19,.42);';
+          'box-shadow:inset 0 0 0 4000px rgba(6,10,19,.10);';
         el.insertBefore(bg, el.firstChild);
       }
       bg.style.backgroundImage = 'url("' + SCENE_SRC + '")';
