@@ -376,38 +376,9 @@
             credit.style.bottom = '';
             credit.classList.toggle('dshb-credit-off', wouldOverlap);
             credit.style.transform = wouldOverlap ? 'translateY(4px)' : 'none';
-            // 品牌行 HARNESS 那个徽章是 SVG 里画死的深蓝块，字也是深蓝 → 用一层米色字盖回去
-            const name = col.querySelector('[class*="_brandName"]');
-            const svg = name === null ? null : name.querySelector('svg');
-            // 侧栏收起时品牌行整块被拆掉/挪出窗口，徽章盖片会孤零零浮在聊天区标题上
-            if (svg === null) {
-              const stale = document.getElementById('dshb-chip');
-              if (stale) stale.style.display = 'none';
-            } else {
-              {
-                // SVG 里画死的 HARNESS 字会和我们叠的白字重影 → 先把它藏掉
-                for (const t of svg.querySelectorAll('text, tspan')) {
-                  t.style.setProperty('fill', 'transparent', 'important');
-                }
-                const r = svg.getBoundingClientRect();
-                const chip = document.getElementById('dshb-chip');
-                const el = chip || document.createElement('span');
-                if (!chip) {
-                  el.id = 'dshb-chip';
-                  el.setAttribute('aria-hidden', 'true');
-                  el.textContent = 'HARNESS';
-                  el.style.cssText = 'position:fixed;display:flex;align-items:center;justify-content:center;' +
-                    'font:700 9px/1 "Segoe UI",Arial,sans-serif;letter-spacing:.9px;color:#f4f1e8;' +
-                    'pointer-events:none;z-index:2147482000';
-                  document.body.appendChild(el);
-                }
-                el.style.left = Math.round(r.left + r.width * 0.665) + 'px';
-                el.style.top = Math.round(r.top) + 'px';
-                el.style.width = Math.round(r.width * 0.335) + 'px';
-                el.style.height = Math.round(r.height) + 'px';
-                el.style.display = (r.width < 8 || r.right < 40) ? 'none' : 'flex';
-              }
-            }
+            // HARNESS 徽章用 DSH 自己那版（SVG 里就是深蓝块+白字），不再叠加文字层，
+            // 之前叠的那层会和 SVG 自带字错位，看起来像重影。
+            { const stale = document.getElementById('dshb-chip'); if (stale) stale.remove(); }
           }
         } catch (e) { /* 落款画不出来不影响主界面 */ }
         card.classList.add(SKIN_CLASS);
@@ -660,6 +631,7 @@
           'box-shadow:none!important}',
           /* 顶部标题条：外壳那层的 ::before 正好是那 40px 的拖拽区，刷成深蓝黑盖住底图 */
           '[data-dshb-frame]:before{background:#0a0f1c!important}',
+          '#dshb-chip{display:none!important}',
           /* 窗口边缘（body）跟着主题上色，避免底栏露出一条白边 */
           'html[data-dshb-theme="dark"] body{background-color:#0b0f16!important}',
           'html[data-dshb-theme="light"] body{background-color:#efe8dc!important}',
