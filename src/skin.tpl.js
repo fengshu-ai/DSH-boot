@@ -320,7 +320,13 @@
               + '<em>使用素材来自画师【赤橙chio】哇</em>';
             if (credit.innerHTML !== creditHtml) credit.innerHTML = creditHtml;
             // 固定在左下角（离底 24px）；侧栏太窄/太矮时收起
-            const wouldOverlap = col.clientWidth < 220 || col.clientHeight < 460;
+            // 兜底：只有列表最后一行真的顶进落款 24px 才淡出（约半行文字）
+            const rail = col.clientWidth < 220 || col.clientHeight < 460;
+            const area = col.querySelector('[class*="_scrollArea"]');
+            const kid = area === null ? null : area.lastElementChild;
+            const collides = kid !== null
+              && kid.getBoundingClientRect().bottom > credit.getBoundingClientRect().top + 24;
+            const wouldOverlap = rail || collides;
             credit.style.top = '';
             credit.style.bottom = '';
             credit.classList.toggle('dshb-credit-off', wouldOverlap);
