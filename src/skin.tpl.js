@@ -15,22 +15,9 @@
     const SURFACE = '[class*="_centerCol"]';
     const RIGHTBAR = '[class*="_rightbarCol"]';
 
-    try {
-      if (!window.__dshbErrHooked) {
-        window.__dshbErrHooked = 1;
-        window.__dshbErr = '';
-        window.addEventListener('error', function (e) { window.__dshbErr = String(e.message || e); });
-        window.addEventListener('unhandledrejection', function (e) { window.__dshbErr = 'rej:' + String(e.reason); });
-      }
-    } catch (e) { /* 忽略 */ }
-
     /** S.T.A.R.S 星标（从插件 icon.svg 里抠出来的 PNG）。 */
 
-    const STAR_SRC = '__STAR_SRC__';
-
     /** 侧栏右边沿的撕纸白边贴图（48×1024，白色 + alpha）。 */
-
-    const EDGE_SRC = '__EDGE_SRC__';
     /** gui/main_menu.png 裁掉左边纸 + 压暗（1600×1271，JPEG q87）。 */
     const SCENE_SRC = '__SCENE_SRC__';
     /** 游戏主界面那段循环动画（images/m3.webm 裁纸+压暗到同一帧位，10s 无缝循环）。 */
@@ -138,14 +125,7 @@
     }
 
     /** 动态底图：铺在整窗外壳上（和静帧同一个几何），不然视频和静帧的边界会露出来。 */
-        /** 雪景上方那层薄幕：深色压暗、浅色提亮，保证文字还看得清。 */
-    function veil() {
-      try {
-        return 'rgba(6,10,19,.56)';
-      } catch (e) { return 'rgba(6,10,19,.42)'; }
-    }
-
-function showVideo() {
+    function showVideo() {
       const fr = frameEl();
       if (fr === null) return;
       if (sceneVideo !== null && sceneVideo.isConnected) return;
@@ -221,6 +201,32 @@ function showVideo() {
     /** 顶部标题条的目标色：和 Electron 标题栏覆盖层（─ □ ✕ 那块）同一个深蓝黑。 */
     const TITLEBAR = '#0a0f1c';
 
+    /** 深/浅两套皮肤：按 DSH 当前主题（body[data-ds-dark-theme]）二选一。 */
+    function isDarkTheme() {
+      try { return document.body !== null && document.body.hasAttribute('data-ds-dark-theme'); }
+      catch (e) { return true; }
+    }
+    function titlebarColor() { return isDarkTheme() ? '#0a0f1c' : '#efe8dc'; }
+    /** 动态底图的视频真的能播了吗（能播才让 frame 透明，否则保持不透明底色）。 */
+    function videoReady() {
+      try {
+        if (!motionWanted()) return false;
+        const v = document.getElementById('dshb-scene');
+        return v !== null && v.readyState >= 2 && v.videoWidth > 0;
+      } catch (e) { return false; }
+    }
+    function surfaceColor() { return isDarkTheme() ? '#0b0f16' : '#f4efe6'; }
+    function sceneVeil() { return isDarkTheme() ? 'rgba(6,10,19,.56)' : 'rgba(250,247,241,.62)'; }
+    /** 把当前主题写到 <html data-dshb-theme>，CSS 靠它挑深/浅那一套。 */
+    function syncTheme() {
+      try {
+        const v = isDarkTheme() ? 'dark' : 'light';
+        const root = document.documentElement;
+        if (root.dataset.dshbTheme !== v) root.dataset.dshbTheme = v;
+      } catch (e) { /* 忽略 */ }
+    }
+
+
     /**
      * 顶部 40px 那条是"外壳自己的背景"：Windows 下 .mP3x-q_frame 有
      * padding-top: 40px，背景取 --dsw-specific-sidebar-fill，外面再压一层同色的
@@ -243,23 +249,10 @@ function showVideo() {
         };
         el.setAttribute('data-dshb-frame', '1');
       }
-      el.style.setProperty('background-color', TITLEBAR, 'important');
+      el.style.setProperty('background-color', videoReady() ? 'transparent' : titlebarColor(), 'important');
       // 底图不再画在外壳自己的背景上，而是单独一层 #dshb-bg（z-index:-2，负层），
       // 这样动态的视频层（z-index:-1）能夹在"底图"和"内容"中间，又不会盖住任何界面。
       el.style.removeProperty('background-image');
-      // 主栏底图：按 HANDOFF 的做法直接画在 _centerCol 上（inline !important），
-      // 不走 #dshb-bg 负层 —— 那层会被主栏自己的不透明底色盖住。
-      const card = cardElement();
-      if (card !== null) {
-        const fit = sceneFit(card.clientWidth || window.innerWidth, card.clientHeight || window.innerHeight);
-        const v = veil();
-        card.style.setProperty('background-color', '#0b0f16', 'important');
-        card.style.setProperty('background-image', 'linear-gradient(' + v + ',' + v + '), url("' + SCENE_SRC + '")', 'important');
-        card.style.setProperty('background-size', '100% 100%, ' + fit.w + 'px ' + fit.h + 'px', 'important');
-        card.style.setProperty('background-position', '0 0, ' + fit.x + 'px ' + fit.y + 'px', 'important');
-        card.style.setProperty('background-repeat', 'no-repeat', 'important');
-      }
-
       el.style.removeProperty('background-size');
       el.style.removeProperty('background-position');
       let bg = document.getElementById('dshb-bg');
@@ -270,10 +263,28 @@ function showVideo() {
         bg.setAttribute('aria-hidden', 'true');
         bg.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:-2;' +
           'background-repeat:no-repeat;background-size:cover;background-position:50% 46%;' +
-          'box-shadow:inset 0 0 0 4000px ' + veil() + ';';
+          'box-shadow:inset 0 0 0 4000px ' + sceneVeil() + ';';
         el.insertBefore(bg, el.firstChild);
       }
       bg.style.backgroundImage = 'url("' + SCENE_SRC + '")';
+      try {
+        const card = cardElement();
+        if (card !== null) {
+          const fit = sceneFit(card.clientWidth || window.innerWidth, card.clientHeight || window.innerHeight);
+          // 动态底图开着时，视频在下面那层，这里只铺一层薄幕，别把视频盖住
+          // 视频真的能播了才撤掉静帧，否则先拿静帧顶着，别留一片空白
+          const dyn = videoReady();
+          const veil = dyn
+            ? (isDarkTheme() ? 'rgba(6,10,19,.30)' : 'rgba(250,247,241,.62)')
+            : sceneVeil();
+          card.style.setProperty('background-color', dyn ? 'transparent' : surfaceColor(), 'important');
+          card.style.setProperty('background-image', 'linear-gradient(' + veil + ',' + veil + ')' +
+            (dyn ? '' : ', url("' + SCENE_SRC + '")'), 'important');
+          card.style.setProperty('background-size', dyn ? '100% 100%' : '100% 100%, ' + fit.w + 'px ' + fit.h + 'px', 'important');
+          card.style.setProperty('background-position', dyn ? '0 0' : '0 0, ' + fit.x + 'px ' + fit.y + 'px', 'important');
+          card.style.setProperty('background-repeat', 'no-repeat', 'important');
+        }
+      } catch (e) { /* 忽略 */ }
       // 顶部那 40px 必须是深蓝黑：外壳自带的 ::before 不一定还在（拿到的 _frame
       // 可能是内层那一圈），所以自己压一条，高度取外壳的 padding-top。
       let bar = document.getElementById('dshb-topbar');
@@ -282,12 +293,12 @@ function showVideo() {
         bar = document.createElement('div');
         bar.id = 'dshb-topbar';
         bar.setAttribute('aria-hidden', 'true');
-        bar.style.cssText = 'position:absolute;left:0;right:0;top:0;pointer-events:none;z-index:60;';
+        bar.style.cssText = 'position:absolute;left:0;right:0;top:0;pointer-events:none;z-index:3;';
         el.appendChild(bar);
       }
       const pad = getComputedStyle(el).paddingTop;
       bar.style.height = (pad && pad !== '0px') ? pad : '40px';
-      bar.style.setProperty('background', TITLEBAR, 'important');
+      bar.style.background = titlebarColor();
     }
 
     function unframe() {
@@ -327,9 +338,9 @@ function showVideo() {
 
     /** 主栏里跟它同尺寸的那几层底色（覆盖层）剥成透明，底图才露得出来。 */
     function paintSurface() {
+      syncTheme();
       try {
         const card = cardElement();
-        // 皮肤自己会同时处理深浅两种主题（侧栏纸色 / 主栏深色），不再要求系统处于深色
         if (card === null) {
           if (card !== null) card.classList.remove(SKIN_CLASS);
           unpeel();
@@ -337,8 +348,6 @@ function showVideo() {
           try { dropVideo(); } catch (e) { /* 忽略 */ }
           return;
         }
-        try { paintFrame(); } catch (e) { /* 忽略 */ }
-
         // 侧栏落款（S.T.A.R.S / ©2026）：直接挂到侧栏最外层，跟启动幕那块同位置
         try {
           const col = document.querySelector('[class*="_sidebarCol"]');
@@ -354,8 +363,6 @@ function showVideo() {
             const creditHtml = '<img src="' + TITLE_SIDE + '" alt="饲养染的 30 DAYS">'
               + '<em>使用素材来自画师【赤橙chio】哇</em>';
             if (credit.innerHTML !== creditHtml) credit.innerHTML = creditHtml;
-            { const sc = document.getElementById('dshb-bg');
-              if (sc) sc.style.boxShadow = 'inset 0 0 0 4000px ' + veil(); }
             // 固定在左下角（离底 24px）；侧栏太窄/太矮时收起
             // 兜底：只有列表最后一行真的顶进落款 24px 才淡出（约半行文字）
             const rail = col.clientWidth < 220 || col.clientHeight < 460;
@@ -709,16 +716,6 @@ function showVideo() {
           'background-image:radial-gradient(150% 110% at 26% -14%,#F4F2EE 0%,#F0EBE3 45%,#EBE6DC 100%)!important;',
           'background-size:auto!important;background-repeat:no-repeat!important}',
           '[class*="_sidebarCol"]::after{display:none!important}',
-          /* 强制深色：把深色主题那几块 alias 变量原样搬到浅色作用域，等于把浅色当深色用。 */
-          '[class*="_centerCol"], [class*="_composerSeat"]{',
-          '--dsw-alias-bg-base:var(--dsw-static-neutral-bluish-950);--dsw-alias-bg-document-preview:var(--dsw-static-neutral-bluish-950);--dsw-alias-bg-document-selection:color-mix(in srgb, var(--dsw-static-blue-500) 40%, transparent);--dsw-alias-label-document-preview:var(--dsw-static-neutral-bluish-300);--dsw-alias-bg-layer-1:var(--dsw-static-neutral-bluish-875);--dsw-alias-bg-layer-2:var(--dsw-static-neutral-bluish-850);--dsw-alias-bg-layer-3:var(--dsw-static-neutral-bluish-800);--dsw-alias-bg-mask-1:#00000080;--dsw-alias-bg-mask-2:#0003;--dsw-alias-bg-mask-3:#0000007a;--dsw-alias-bg-mask-photo:#000000e0;--dsw-alias-bg-mask-drop:#272730b3;--dsw-alias-bg-module-platform:var(--dsw-static-neutral-bluish-800);--dsw-alias-bg-multi-select:var(--dsw-static-neutral-850);--dsw-alias-bg-overlay:var(--dsw-static-neutral-bluish-700);--dsw-alias-bg-skeleton:#ffffff14;--dsw-alias-border-inverted2:#ffffff14;--dsw-alias-border-inverted:#ffffff0f;--dsw-alias-border-l1:#ffffff0f;--dsw-alias-border-l2-darkmode-thin:#ffffff0f;--dsw-alias-border-l2:#ffffff1f;--dsw-alias-border-l3:#ffffff29;--dsw-alias-border-l4:#fff3;--dsw-alias-border-selected:var(--dsw-static-neutral-bluish-400);--dsw-alias-brand-primary-invert:var(--dsw-static-neutral-bluish-50);--dsw-alias-brand-primary-new-colorprimary-new-color:var(--dsw-static-deepseek-450);--dsw-alias-brand-primary:var(--dsw-static-neutral-bluish-50);--dsw-alias-brand-text:var(--dsw-static-neutral-bluish-50);--dsw-alias-button-contrast-fill:var(--dsw-static-neutral-bluish-50);--dsw-alias-button-elevated-fill:var(--dsw-static-neutral-bluish-750);--dsw-alias-button-floating-fill:var(--dsw-static-neutral-bluish-850);--dsw-alias-button-floating-hover:var(--dsw-static-neutral-bluish-800);--dsw-alias-button-ghost-active-border:var(--dsw-static-neutral-bluish-600);--dsw-alias-button-ghost-active-fill:var(--dsw-static-neutral-bluish-750);--dsw-alias-button-ghost-active-hover:var(--dsw-static-neutral-bluish-700);--dsw-alias-button-info-fill:var(--dsw-static-deepseek-400);--dsw-alias-button-info-hover:var(--dsw-static-deepseek-500);--dsw-alias-button-primary-dimmed:var(--dsw-static-neutral-bluish-750);--dsw-alias-button-primary-fill:var(--dsw-alias-brand-primary);--dsw-alias-button-primary-hover:var(--dsw-static-neutral-bluish-100);--dsw-alias-button-tool-bar-fill-invisible:#1f1f1f5c;--dsw-alias-button-tool-bar-fill:#54555780;--dsw-alias-button-tool-bar-hover:#54555799;--dsw-alias-card-fill:var(--dsw-static-neutral-850);--dsw-alias-card-fill-hover:var(--dsw-static-neutral-800);--dsw-alias-card-tile-fill:color-mix(in srgb, var(--dsw-static-neutral-00) 5%, transparent);--dsw-alias-chart-messages:var(--dsw-static-blue-450);--dsw-alias-chart-system:var(--dsw-static-neutral-bluish-400);--dsw-alias-chart-tools:var(--dsw-static-violet-400);--dsw-alias-hovercard-bg:var(--dsw-static-neutral-bluish-850);--dsw-alias-hovercard-label-primary:var(--dsw-static-neutral-bluish-00);--dsw-alias-hovercard-label-secondary:var(--dsw-static-neutral-bluish-300);--dsw-alias-hovercard-label-tertiary:var(--dsw-static-neutral-bluish-400);--dsw-alias-hovercard-state-done:var(--dsw-static-violet-400);--dsw-alias-hovercard-state-error:var(--dsw-static-red-400);--dsw-alias-illustration-background:var(--dsw-static-neutral-bluish-850);--dsw-alias-illustration-backing:var(--dsw-static-neutral-bluish-750);--dsw-alias-illustration-detail:var(--dsw-static-neutral-bluish-600);--dsw-alias-illustration-inset:var(--dsw-alias-illustration-backing);--dsw-alias-illustration-shadow:var(--dsw-alias-illustration-backing);--dsw-alias-illustration-surface:var(--dsw-static-neutral-bluish-700);--dsw-alias-interactive-bg-active:#ffffff24;--dsw-alias-interactive-bg-hover-accent:#ffffff3d;--dsw-alias-interactive-bg-hover-danger:#f25a5a26;--dsw-alias-interactive-bg-hover-solid:var(--dsw-static-neutral-bluish-800);--dsw-alias-interactive-bg-hover:#ffffff14;--dsw-alias-json-tree-hover:#e8eaed0d;--dsw-alias-json-tree-icon:#9aa0a6;--dsw-alias-json-tree-keyword:#99c8ff;--dsw-alias-json-tree-number:#99c8ff;--dsw-alias-json-tree-property:#5db0d7;--dsw-alias-json-tree-punctuation:#e8eaed;--dsw-alias-json-tree-string:#f28b82;--dsw-alias-label-caption:var(--dsw-static-neutral-bluish-600);--dsw-alias-label-deep-diving:color-mix(in srgb, var(--dsw-static-deepseek-450) 55%, var(--dsw-static-neutral-bluish-400));--dsw-alias-label-deep-diving-shimmer:color-mix(in srgb, var(--dsw-static-blue-300) 65%, var(--dsw-static-deepseek-400));--dsw-alias-label-dimmed:var(--dsw-static-neutral-bluish-750);--dsw-alias-label-on-color:var(--dsw-static-neutral-bluish-00);--dsw-alias-label-primary-bluish:var(--dsw-static-neutral-bluish-50);--dsw-alias-label-primary-dimmed:var(--dsw-static-neutral-bluish-100);--dsw-alias-label-primary-foreground:var(--dsw-static-neutral-bluish-1000);--dsw-alias-label-primary-inverted:var(--dsw-static-neutral-bluish-800);--dsw-alias-label-primary:var(--dsw-static-neutral-bluish-50);--dsw-alias-label-secondary:var(--dsw-static-neutral-bluish-300);--dsw-alias-label-shimmer:color-mix(in srgb, var(--dsw-static-neutral-00) 45%, transparent);--dsw-alias-label-tertiary:var(--dsw-static-neutral-bluish-400);--dsw-alias-menu-icon:var(--dsw-alias-label-primary-dimmed);--dsw-alias-link:var(--dsw-static-deepseek-400);--dsw-alias-markdown-citation:var(--dsw-static-neutral-bluish-800);--dsw-alias-markdown-code-block-banner:var(--dsw-static-neutral-bluish-850);--dsw-alias-markdown-code-block:var(--dsw-static-neutral-bluish-900);--dsw-alias-markdown-code-segment-selected:var(--dsw-static-neutral-bluish-800);--dsw-alias-markdown-code-segment-unselected:var(--dsw-static-neutral-bluish-900);--dsw-alias-markdown-inline-code:var(--dsw-static-neutral-800);--dsw-alias-markdown-placeholder:var(--dsw-static-neutral-bluish-850);--dsw-alias-markdown-tag:var(--dsw-static-neutral-bluish-850);--dsw-alias-scrollbar-bg-l1:var(--dsw-static-neutral-700);--dsw-alias-scrollbar-bg-l2:var(--dsw-static-neutral-600);--dsw-alias-scrollbar-hover-l1:var(--dsw-static-neutral-600);--dsw-alias-scrollbar-hover-l2:var(--dsw-static-neutral-550);--dsw-alias-state-business-primary:var(--dsw-static-deepseek-400);--dsw-alias-state-business-tertiary:var(--dsw-static-deepseek-800);--dsw-alias-code-diff-added:var(--dsw-static-green-500-a12);--dsw-alias-code-diff-deleted:var(--dsw-static-red-400-a12);--dsw-alias-file-diff-added-bg:#1f3124;--dsw-alias-file-diff-added-gutter:#132016;--dsw-alias-file-diff-added-marker:#41c977;--dsw-alias-file-diff-deleted-bg:#3c1f1b;--dsw-alias-file-diff-deleted-gutter:#28130e;--dsw-alias-file-diff-deleted-marker:#fa423e;--dsw-alias-state-done-primary:var(--dsw-static-violet-400);--dsw-alias-state-error-primary:var(--dsw-static-red-400);--dsw-alias-state-error-secondary:var(--dsw-static-red-400);--dsw-alias-state-idle-primary:var(--dsw-static-neutral-600);--dsw-alias-state-success-primary:var(--dsw-static-green-500);--dsw-alias-state-success-secondary:var(--dsw-static-green-400);--dsw-alias-state-success-tertiary:var(--dsw-static-green-900);--dsw-alias-state-warn-label:var(--dsw-static-amber-600);--dsw-alias-state-warn-primary:var(--dsw-static-amber-500);--dsw-alias-state-warn-secondary:var(--dsw-static-amber-400);--dsw-alias-state-warn-tertiary:var(--dsw-static-amber-900);--dsw-alias-switch-thumb:var(--dsw-static-neutral-bluish-400);--dsw-alias-toast-action:var(--dsw-static-deepseek-400);--dsw-alias-toast-bg:var(--dsw-static-neutral-bluish-750);--dsw-alias-toast-label:var(--dsw-static-neutral-bluish-00);--dsw-alias-turn-trigger-bg:var(--dsw-alias-interactive-bg-hover);--dsw-alias-turn-trigger-bg-hover:var(--dsw-alias-interactive-bg-active);--dsw-alias-tooltip-bg:var(--dsw-static-neutral-bluish-750);--dsw-alias-tooltip-key-bg:color-mix(in srgb, var(--dsw-alias-tooltip-bg), white 18%);--dsw-alias-tooltip-label:var(--dsw-static-neutral-bluish-00);--dsw-alias-trajectory-accent:var(--dsw-static-blue-500);--dsw-specific-bubble-highlight:var(--dsw-static-neutral-bluish-750);--dsw-specific-bubble:var(--dsw-static-neutral-bluish-850);--dsw-specific-file-upload-track:#00000014;--dsw-specific-guide-hero:var(--dsw-static-neutral-700);--dsw-specific-sidebar-right-flash:var(--dsw-static-neutral-00);--dsw-specific-input-major:var(--dsw-static-neutral-bluish-850);--dsw-specific-login-input:var(--dsw-static-neutral-bluish-900);--dsw-menu-surface-fill:#303136a3;--dsw-alias-menu-group-header-fill:#303136f0;--dsw-specific-menu:var(--dsw-menu-surface-fill);--dsw-specific-selector:var(--dsw-static-neutral-bluish-800);--dsw-specific-sidebar-fill:var(--dsw-static-neutral-bluish-900);--dsw-specific-sidebar-nav-item-active-accent:var(--dsw-static-neutral-bluish-800);--dsw-specific-sidebar-nav-item-active:var(--dsw-static-neutral-bluish-750);--dsw-specific-tip:var(--dsw-static-neutral-bluish-800) ;--dsw-alias-onboarding-card-fill:color-mix(in srgb, var(--dsw-static-neutral-bluish-850) 80%, transparent);--dsw-alias-onboarding-secondary-fill:#48494c;--dsw-alias-onboarding-checkbox-border:var(--dsw-alias-border-l2);',
-          '}',
-          /* 主栏底图：直接给容器铺雪景 + 一层薄幕（深色压暗、浅色提亮） */
-          '[class*="_centerCol"]{background-color:#0b0f16!important;',
-          'background-image:linear-gradient(rgba(6,10,19,.42),rgba(6,10,19,.42)),url("' + SCENE_SRC + '")!important;',
-          'background-size:cover!important;background-position:50% 46%!important;background-repeat:no-repeat!important}',
-          'body:not([data-ds-dark-theme]) [class*="_centerCol"]{background-color:#efe8dc!important;',
-          'background-image:linear-gradient(rgba(250,247,241,.60),rgba(250,247,241,.60)),url("' + SCENE_SRC + '")!important}',
           '#dshb-credit{position:absolute;left:30px;bottom:44px;display:flex;flex-direction:column;align-items:flex-start;gap:4px;',
           'pointer-events:none;z-index:4;color:#15171c;transition:opacity .28s ease, transform .28s ease}',
           '#dshb-credit.dshb-credit-off{opacity:0!important;pointer-events:none}',
