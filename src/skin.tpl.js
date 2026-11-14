@@ -220,23 +220,6 @@
       return 'dark';
     }
 
-    /** 浅色包用自绘字标（原生 SVG 里叠了 HARNESS 徽章，浅色下那个重影很明显）。 */
-    function brandText(on) {
-      try {
-        const name = document.querySelector('[class*="_brandName"]');
-        if (name === null) return;
-        let el = document.getElementById('dshb-brand');
-        if (on) {
-          if (el === null) {
-            el = document.createElement('span');
-            el.id = 'dshb-brand';
-            el.textContent = 'deepseek';
-            name.appendChild(el);
-          }
-        } else if (el !== null) el.remove();
-      } catch (e) { /* 忽略 */ }
-    }
-
     let packId = null;
     /** 取当前主题对应的包；切换时换掉 html 标记、包 CSS 和窗口按钮色。 */
     function pack() {
@@ -252,7 +235,6 @@
           if (st.textContent !== next.css) st.textContent = next.css;
         } catch (e) { /* 忽略 */ }
         try { window.__dshbCaption = { bg: next.titlebar, sym: next.captionSymbol }; } catch (e) { /* 忽略 */ }
-        try { brandText(next.id === 'light'); } catch (e) { /* 忽略 */ }
         try { const sc = (typeof setCaption === 'function') ? setCaption : window.__dshbSetCaption; if (typeof sc === 'function') sc(next.titlebar, next.captionSymbol); } catch (e) { /* 忽略 */ }
         if (prev !== null) { try { paintFrame(); } catch (e) { /* 忽略 */ } }
       }
@@ -400,33 +382,6 @@
             credit.classList.toggle('dshb-credit-off', wouldOverlap);
             credit.style.transform = wouldOverlap ? 'translateY(4px)' : 'none';
             // 品牌行 HARNESS 那个徽章是 SVG 里画死的深蓝块，字也是深蓝 → 用一层米色字盖回去
-            const name = col.querySelector('[class*="_brandName"]');
-            const svg = name === null ? null : name.querySelector('svg');
-            // 侧栏收起时品牌行整块被拆掉/挪出窗口，徽章盖片会孤零零浮在聊天区标题上
-            if (svg === null) {
-              const stale = document.getElementById('dshb-chip');
-              if (stale) stale.style.display = 'none';
-            } else {
-              {
-                const r = svg.getBoundingClientRect();
-                const chip = document.getElementById('dshb-chip');
-                const el = chip || document.createElement('span');
-                if (!chip) {
-                  el.id = 'dshb-chip';
-                  el.setAttribute('aria-hidden', 'true');
-                  el.textContent = 'HARNESS';
-                  el.style.cssText = 'position:fixed;display:flex;align-items:center;justify-content:center;' +
-                    'font:700 9px/1 "Segoe UI",Arial,sans-serif;letter-spacing:.9px;color:#f4f1e8;' +
-                    'pointer-events:none;z-index:2147482000';
-                  document.body.appendChild(el);
-                }
-                el.style.left = Math.round(r.left + r.width * 0.665) + 'px';
-                el.style.top = Math.round(r.top) + 'px';
-                el.style.width = Math.round(r.width * 0.335) + 'px';
-                el.style.height = Math.round(r.height) + 'px';
-                el.style.display = (r.width < 8 || r.right < 40) ? 'none' : 'flex';
-              }
-            }
           }
         } catch (e) { /* 落款画不出来不影响主界面 */ }
         card.classList.add(SKIN_CLASS);
@@ -630,6 +585,8 @@
     }
 
     function installShellSkin() {
+      { const c = document.getElementById('dshb-chip'); if (c) c.remove(); }
+      { const b = document.getElementById('dshb-brand'); if (b) b.remove(); }
       { const stale = document.getElementById('dshb-probe'); if (stale) stale.remove(); }
       try { pack(); } catch (e) { /* 忽略 */ }
       try {

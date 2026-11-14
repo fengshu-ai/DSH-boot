@@ -4,5 +4,5 @@
   "veil": "rgba(250,247,241,.06)",
   "videoFilter": "brightness(1.02) saturate(1.02)",
   "captionSymbol": "#3e519d",
-  "css": "html[data-dshb-theme=\"light\"] body{background-color:#efe8dc!important}\n[class*=\"_composerSeat\"]{background:linear-gradient(to top,#efe8dc 34%,rgba(239,232,220,0))!important}\nhtml[data-dshb-theme=\"light\"] [class*=\"_brandName\"] svg{display:none!important}\nhtml[data-dshb-theme=\"light\"] #dshb-brand{display:inline-block;font:800 16px/1 \"Segoe UI\",Arial,sans-serif;\nletter-spacing:.2px;color:#2b3660!important;margin-left:2px;white-space:nowrap}"
+  "css": "html[data-dshb-theme=\"light\"] body{background-color:#efe8dc!important}\n[class*=\"_composerSeat\"]{background:linear-gradient(to top,#efe8dc 34%,rgba(239,232,220,0))!important}"
 }
